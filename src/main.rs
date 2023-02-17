@@ -4,7 +4,7 @@ use dotenv::dotenv;
 use mongodb::{bson::Document, Client, Collection, Database};
 use std::env;
 
-mod users;
+mod user;
 
 async fn setup() -> Result<Database> {
     dotenv().ok();
@@ -56,7 +56,7 @@ mod tests {
     use mongodb::{bson::Document, Client, Database};
     use std::env;
 
-    use crate::users;
+    use crate::user;
 
     #[tokio::test]
     async fn insert_doc() {
@@ -102,13 +102,15 @@ mod tests {
         let db = super::setup().await.unwrap();
 
         // Get a handle to a collection of `Book`.
-        let typed_collection = db.collection::<users::User>("users");
+        let typed_collection = db.collection::<user::Data>("users");
 
         let users = vec![
-            users::User {
+            user::Data {
+                // id: ...
                 name: "Jim Snow".to_string(),
             },
-            users::User {
+            user::Data {
+                // id: ...
                 name: "Mary Jane".to_string(),
             },
         ];
@@ -116,11 +118,12 @@ mod tests {
         typed_collection.insert_many(users, None).await.unwrap();
 
         let user = match db
-            .collection::<users::User>("users")
+            .collection::<user::Data>("users")
             .find_one(
                 doc! {
                       "name": "Jim Snow"
                 },
+                //Some(users[0].data),
                 None,
             )
             .await
@@ -139,37 +142,51 @@ mod tests {
     async fn update_doc() {
         let db = super::setup().await.unwrap();
 
-        let typed_collection = db.collection::<users::User>("users");
+        let typed_collection = db.collection::<user::Data>("users");
 
-        let user = users::User {
+        let user = user::Data {
             name: "Bruce Wayne".to_string(),
         };
+
+        /*
+            1. Start with a struct, push struct to mongo
+            2a. Obtain the id from mongo for the new record created in #1 above, and update local struct for #3
+            2b. Query mongo and obtain the struct (query using regular find)
+            3. Update struct, and push it to mongo
+            4. Query mongo and obtain updated struct
+            5. Send mongo a delete command using the struct
+        */
 
         typed_collection.insert_one(user, None).await.unwrap();
 
         let update_result = db
-            .collection::<users::User>("users")
-            .update_one(
+            .collection::<user::Data>("users")
+            .update_many(
+                /*
+                    original_user.into<Option<Document>>().unwrap() --> Document,
+                    updated_user,
+                */
                 doc! {
                       "name": "Bruce Wayne"
                 },
                 doc! {"$set": { "name": "Batman" }},
                 None,
             )
-            .await;
+            .await
+            .unwrap();
 
         println!("Result: {:#?}", update_result); // .Debug() -- not .Display()
 
-        assert!(true)
+        assert!(update_result.modified_count > 0)
     }
     #[tokio::test]
     #[ignore]
     async fn delete_doc() {
         let db = super::setup().await.unwrap();
 
-        let typed_collection = db.collection::<users::User>("users");
+        let typed_collection = db.collection::<user::Data>("users");
 
-        let user = users::User {
+        let user = user::Data {
             name: "To Be Removed".to_string(),
         };
 
