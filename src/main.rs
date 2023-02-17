@@ -113,7 +113,6 @@ mod tests {
             },
         ];
 
-        // Insert the books into "mydb.books" collection, no manual conversion to BSON necessary.
         typed_collection.insert_many(users, None).await.unwrap();
 
         let user = match db
@@ -135,5 +134,63 @@ mod tests {
         assert!(true)
     }
 
-    // CRUD
+    #[tokio::test]
+    #[ignore]
+    async fn update_doc() {
+        let db = super::setup().await.unwrap();
+
+        let typed_collection = db.collection::<users::User>("users");
+
+        let user = users::User {
+            name: "Bruce Wayne".to_string(),
+        };
+
+        typed_collection.insert_one(user, None).await.unwrap();
+
+        let update_result = db
+            .collection::<users::User>("users")
+            .update_one(
+                doc! {
+                      "name": "Bruce Wayne"
+                },
+                doc! {"$set": { "name": "Batman" }},
+                None,
+            )
+            .await;
+
+        println!("Result: {:#?}", update_result); // .Debug() -- not .Display()
+
+        assert!(true)
+    }
+    #[tokio::test]
+    #[ignore]
+    async fn delete_doc() {
+        let db = super::setup().await.unwrap();
+
+        let typed_collection = db.collection::<users::User>("users");
+
+        let user = users::User {
+            name: "To Be Removed".to_string(),
+        };
+
+        let temp_doc = typed_collection.insert_one(user, None).await.unwrap();
+
+        println!("New document ID: {}", temp_doc.inserted_id);
+
+        // Delete all documents for movies called "Parasite":
+        let delete_result = typed_collection
+            .delete_many(
+                doc! {
+                   "name": "To Be Removed"
+                },
+                None,
+            )
+            .await
+            .unwrap();
+        println!("Deleted {} documents", delete_result.deleted_count);
+
+        // println!("Result: {:#?}", update_result); // .Debug() -- not .Display()
+
+        assert!(true)
+    }
 }
