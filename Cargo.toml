@@ -8,7 +8,10 @@ edition = "2021"
 [dependencies]
 mongodb = "2.3.1"
 bson = { version = "2.5.0", features = ["chrono-0_4"] } # Needed for using chrono datetime in doc
-tokio = "1.24.1"
 serde = { version = "1.0", features = ["derive"] }
 dotenv = "0.15.0"
 anyhow = "1.0.69"
+futures = "0.3.26"
+mongod = { version = "0.3", features = ["derive"] }
+# mongod-derive = "0.3.3"
+tokio = { version = "1.0", features = ["full"] }
