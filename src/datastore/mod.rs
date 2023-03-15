@@ -64,11 +64,7 @@ impl Atlas {
             "id": read_value
         };
 
-        let find_result = games_collection
-            .find_one(query, None)
-            .await
-            .unwrap()
-            .unwrap();
+        let find_result = games_collection.find_one(query, None).await?.unwrap();
 
         Ok(find_result)
     }
@@ -110,7 +106,7 @@ impl Atlas {
             delete_key: delete_value
         };
 
-        let delete_result = games_collection.delete_many(query, None).await.unwrap();
+        let delete_result = games_collection.delete_many(query, None).await?;
         Ok(delete_result)
     }
 }
@@ -121,14 +117,13 @@ mod tests {
     use crate::api::{self, test_data::TestData};
 
     #[tokio::test]
-    async fn test_01_try_new_atlas_struct() -> Result<()> {
+    async fn test_01_try_new_atlas_struct() {
         let atlas = Atlas::try_new().await.unwrap();
         println!("{:#?}", atlas);
-        Ok(())
     }
 
     #[tokio::test]
-    async fn test_02_try_create() -> Result<()> {
+    async fn test_02_try_create() {
         let atlas = Atlas::try_new().await.unwrap();
         let test_data_struct = TestData::new();
         let collection_name = "users";
@@ -138,11 +133,10 @@ mod tests {
         Atlas::try_create(atlas.db, collection_name, outcomes)
             .await
             .unwrap();
-        Ok(())
     }
 
     #[tokio::test]
-    async fn test_03_try_read() -> Result<()> {
+    async fn test_03_try_read() {
         let atlas = Atlas::try_new().await.unwrap();
         let read_key = "id".to_string();
         let read_value = "9c950da2cbab6a4e71437182846961d4".to_string();
@@ -151,11 +145,10 @@ mod tests {
             .await
             .unwrap();
         println!("{:#?}", find_response);
-        Ok(())
     }
 
     #[tokio::test]
-    async fn test_04_try_update() -> Result<()> {
+    async fn test_04_try_update() {
         let atlas = Atlas::try_new().await.unwrap();
         let collection_name = "users";
         let query_id = "9c950da2cbab6a4e71437182846961d4".to_string();
@@ -171,11 +164,10 @@ mod tests {
         .await
         .unwrap();
         println!("{:#?}", update_result);
-        Ok(())
     }
 
     #[tokio::test]
-    async fn test_05_try_delete() -> Result<()> {
+    async fn test_05_try_delete() {
         let atlas = Atlas::try_new().await.unwrap();
         let collection_name = "users";
         let delete_key = "home_team".to_string();
@@ -185,6 +177,5 @@ mod tests {
                 .await
                 .unwrap();
         println!("{:#?}", delete_result);
-        Ok(())
     }
 }
