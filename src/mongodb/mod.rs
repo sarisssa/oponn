@@ -1,4 +1,3 @@
-use ::futures::prelude::*;
 use anyhow::Result;
 use bson::{doc, to_document, Document};
 use dotenv::dotenv;
